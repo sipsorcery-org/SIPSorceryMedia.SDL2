@@ -101,7 +101,7 @@ namespace PlayVideoFile
             videoSource = fileSource as IVideoSource;
             videoSource.RestrictFormats(x => x.Codec == VideoCodec);
             videoSource.SetVideoSourceFormat(videoSource.GetVideoSourceFormats().Find(x => x.Codec == VideoCodec));
-            videoSource.OnVideoSourceRawSample += FileSource_OnVideoSourceRawSample;
+            videoSource.OnVideoSourceRawSampleFaster += FileSource_OnVideoSourceRawSampleFaster;
 
             audioSource = fileSource as IAudioSource;
             audioSource.SetAudioSourceFormat(audioSource.GetAudioSourceFormats().Find(x => x.Codec == AudioCodecsEnum.PCMU));
@@ -137,7 +137,7 @@ namespace PlayVideoFile
             audioEndPoint?.GotAudioSample(pcmBytes);
         }
 
-        private static void FileSource_OnVideoSourceRawSample(uint durationMilliseconds, RawImage rawImage)
+        private static void FileSource_OnVideoSourceRawSampleFaster(uint durationMilliseconds, RawImage rawImage)
         {
             asciiFrame.GotRawImage(ref rawImage);
         }

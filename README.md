@@ -40,7 +40,7 @@ Install the [SDL](https://www.libsdl.org/index.php) binaries using the package m
 
 # Testing
 
-Several projects permits to understand how the library can be used (all in C# except one in Cpp):
+Several projects permits to understand how the library can be used:
 
 - [PlayAudioFile](./test/PlayAudioFile) - **Multiplatform application**:
     - Let user select an Audio Playback device

@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SIPSorceryMedia.FFmpeg" Version="0.0.19" />
+    <PackageReference Include="SIPSorceryMedia.FFmpeg" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
