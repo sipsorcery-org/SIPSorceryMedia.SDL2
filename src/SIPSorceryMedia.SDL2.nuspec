@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>SIPSorceryMedia.SDL2</id>
+    <authors>Christophe Irles</authors>
+    <copyright>Copyright © 2020-2022 Christophe Irles</copyright>
+    <license type="expression">LGPL-2.1-only</license>
+    <title>SIPSorceryMedia.SDL2</title>
+    <summary>SDL2 Audio Source and Audio End Point for real-time communications.</summary>
+	<description>Provides SDL2 based audio input and output which can be used with the SIPSorcery real-time communications library.</description>
+	<iconUrl>http://www.sipsorcery.com/mainsite/favicon.ico</iconUrl>
+	<icon>icon.png</icon>
+    <projectUrl>https://github.com/sipsorcery-org/SIPSorcery.SDL2</projectUrl>
+	<repository type="git" url="https://github.com/sipsorcery-org/SIPSorcery.SDL2" branch="master" />
+	<tags>WebRTC VoIP SIPSorcery Media SDL2 Audio</tags>
+	<dependencies>
+      <dependency id="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+      <dependency id="SIPSorceryMedia.Abstractions" Version="1.2.0" />
+    </dependencies>
+	<releaseNotes>
+-v1.0.0: Audio Source and Audio End Point       
+	</releaseNotes>
+	<version>1.0.0</version>
+  </metadata>
+  <files>
+    <file src="icon.png" target="icon.png" />
+    <file src="bin\Release\netstandard2.0\SIPSorceryMedia.SDL2.dll" target="lib\netstandard2.0" />
+  	<file src="bin\Release\netstandard2.1\SIPSorceryMedia.SDL2.dll" target="lib\netstandard2.1" />
+    <file src="bin\Release\netcoreapp3.1\SIPSorceryMedia.SDL2.dll" target="lib\netcoreapp3.1" />
+    <file src="bin\Release\net5.0\SIPSorceryMedia.SDL2.dll" target="lib\net5.0" />
+  </files>
+</package>
