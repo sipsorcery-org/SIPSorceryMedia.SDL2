@@ -18,9 +18,10 @@
       <dependency id="SIPSorceryMedia.Abstractions" Version="1.2.0" />
     </dependencies>
 	<releaseNotes>
+-v1.0.1: No changes, release tag.       
 -v1.0.0: Audio Source and Audio End Point       
 	</releaseNotes>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
   </metadata>
   <files>
     <file src="icon.png" target="icon.png" />
