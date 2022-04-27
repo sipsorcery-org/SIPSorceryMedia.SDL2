@@ -11,12 +11,6 @@ namespace SIPSorceryMedia.SDL2
     {
         private static Boolean _sdl2Initialised = false;
 
-        static public List<AudioFormat> GetSupportedAudioFormats() => new List<AudioFormat>
-        {
-            new AudioFormat(SDPWellKnownMediaFormatsEnum.PCMU),
-            new AudioFormat(SDPWellKnownMediaFormatsEnum.PCMA)
-        };
-
         static public String ? GetAudioRecordingDevice(String startWithName) => GetAudioDevice(startWithName, true);
 
         static public  String? GetAudioPlaybackDevice(String startWithName) => GetAudioDevice(startWithName, false);
@@ -25,18 +19,12 @@ namespace SIPSorceryMedia.SDL2
 
         static public List<String> GetAudioRecordingDevices() => GetAudioDevices(true);
 
-        static public SDL_AudioSpec GetDefaultAudioSpec()
+        static public SDL_AudioSpec GetAudioSpec(int clockRate = AudioFormat.DEFAULT_CLOCK_RATE, byte channels = 1)
         {
-            //SDL_AudioSpec desiredPlaybackSpec = new SDL_AudioSpec();
-            //desiredPlaybackSpec.freq = AudioFormat.DEFAULT_CLOCK_RATE;
-            //desiredPlaybackSpec.format = AUDIO_S16;
-            //desiredPlaybackSpec.channels = 1; // Value rturned by (byte)ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_MONO);
-
-
             SDL_AudioSpec desiredPlaybackSpec = new SDL_AudioSpec();
-            desiredPlaybackSpec.freq = AudioFormat.DEFAULT_CLOCK_RATE;
+            desiredPlaybackSpec.freq = clockRate;
             desiredPlaybackSpec.format = AUDIO_S16;
-            desiredPlaybackSpec.channels = 1; // Value returned by (byte)ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_MONO);
+            desiredPlaybackSpec.channels = channels; // Value returned by (byte)ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_MONO);
             desiredPlaybackSpec.silence = 0;
             //desiredPlaybackSpec.samples = 512;
             //desiredPlaybackSpec.userdata = null;

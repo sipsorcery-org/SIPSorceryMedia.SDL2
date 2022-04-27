@@ -6,20 +6,25 @@ The classes in this project provide **Audio End Point** and **Audio Source** fea
 
 So used in correlation with **SIPSorceryMedia.FFMpeg** you have both  **Audio and Video End Point** and **Audio and Video Source** using multi-platform component.
 
-Using both you have these deatures:
-  
- - **Video codecs**: VP8, H264
- - **Audio codecs**: PCMU, PCMA
+Using both you have these features:
+
  - **Video Input**:
     - using local file or remote using URI [**`With SIPSorceryMedia.FFMpeg`**] 
     - using camera [**`With SIPSorceryMedia.FFMpeg`**]
     - using screen [**`With SIPSorceryMedia.FFMpeg`**]
+    
  - **Audio Input**:
     - using local file or remote using URI [**`With SIPSorceryMedia.FFMpeg`**]
     - using microphone [**`With SIPSorceryMedia.FFMpeg or SIPSorceryMedia.SDL2`**]
+    
  - **Audio Ouput**:
     - using a speaker [**`With SIPSorceryMedia.SDL2`**]
 
+**Audio Codecs** supported by this library: (using **AudioEncoder** from **SIPSorcery** )
+ - PCMU
+ - PCMA
+ - G722
+ - G729 (not tested but should worked)
 
 # Installing SDL2
 

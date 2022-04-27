@@ -54,16 +54,17 @@ namespace SIPSorceryMedia.SDL2
             _audioEncoder = audioEncoder;
 
             _audioOutDeviceName = audioOutDeviceName;
-
-
-            InitPlaybackDevice();
         }
 
         public void RestrictFormats(Func<AudioFormat, bool> filter) => _audioFormatManager.RestrictFormats(filter);
 
         public void SetAudioSinkFormat(AudioFormat audioFormat)
         {
-            _audioFormatManager.SetSelectedFormat(audioFormat);
+            if (_audioFormatManager != null)
+            {
+                _audioFormatManager.SetSelectedFormat(audioFormat);
+                InitPlaybackDevice();
+            }
         }
 
         public List<AudioFormat> GetAudioSinkFormats() => _audioFormatManager.GetSourceFormats();
@@ -87,9 +88,11 @@ namespace SIPSorceryMedia.SDL2
                     SDL2Helper.CloseAudioPlaybackDevice(_audioOutDeviceId);
                     _audioOutDeviceId = 0;
                 }
-                
+
                 // Init Playback device.
-                var audioSpec = SDL2Helper.GetDefaultAudioSpec();
+                AudioFormat audioFormat = _audioFormatManager.SelectedFormat;
+                var audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate);
+
                 _audioOutDeviceId = SDL2Helper.OpenAudioPlaybackDevice(_audioOutDeviceName, ref audioSpec);
                 if(_audioOutDeviceId < 0)
                 {
@@ -104,7 +107,6 @@ namespace SIPSorceryMedia.SDL2
                 OnAudioSinkError?.Invoke($"SDLAudioEndPoint failed to initialise playback device. {excp.Message}");
             }
         }
-
 
         /// <summary>
         /// Event handler for playing audio samples received from the remote call party.
@@ -154,9 +156,6 @@ namespace SIPSorceryMedia.SDL2
         {
             if(!_isStarted)
             {
-                var audioSpec = SDL2Helper.GetDefaultAudioSpec();
-                _audioOutDeviceId = SDL2Helper.OpenAudioPlaybackDevice(_audioOutDeviceName, ref audioSpec);
-
                 if (_audioOutDeviceId > 0)
                 {
                     _isStarted = true;
