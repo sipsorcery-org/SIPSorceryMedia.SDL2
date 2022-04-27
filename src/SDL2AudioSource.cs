@@ -13,7 +13,6 @@ namespace SIPSorceryMedia.SDL2
     public class SDL2AudioSource: IAudioSource
     {
         static private ILogger logger = SIPSorcery.LogFactory.CreateLogger<SDL2AudioSource>();
-        static private List<AudioFormat> _supportedAudioFormats = SIPSorceryMedia.SDL2.SDL2Helper.GetSupportedAudioFormats();
 
         private String _audioInDeviceName;
         private uint _audioInDeviceId = 0;
@@ -29,7 +28,9 @@ namespace SIPSorceryMedia.SDL2
 
         private BackgroundWorker backgroundWorker;
 
-#region EVENT
+        private AudioSamplingRatesEnum audioSamplingRates;
+
+        #region EVENT
         public event EncodedSampleDelegate ? OnAudioSourceEncodedSample = null;
         public event RawAudioSampleDelegate ? OnAudioSourceRawSample = null;
 
@@ -43,10 +44,10 @@ namespace SIPSorceryMedia.SDL2
 
             _audioInDeviceName = audioInDeviceName;
 
-            _audioFormatManager = new MediaFormatManager<AudioFormat>(_supportedAudioFormats);
+            _audioFormatManager = new MediaFormatManager<AudioFormat>(audioEncoder.SupportedFormats);
             _audioEncoder = audioEncoder;
 
-            InitRecordingDevice();
+            //InitRecordingDevice();
 
             backgroundWorker = new BackgroundWorker();
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
@@ -67,7 +68,7 @@ namespace SIPSorceryMedia.SDL2
                         SDL_DequeueAudio(_audioInDeviceId, (IntPtr)ptr, size);
 
                         short[] pcm = buf.Take((int)size * 2).Where((x, i) => i % 2 == 0).Select((y, i) => BitConverter.ToInt16(buf, i * 2)).ToArray();
-                        OnAudioSourceRawSample?.Invoke(AudioSamplingRatesEnum.Rate8KHz, (uint)pcm.Length, pcm);
+                        OnAudioSourceRawSample?.Invoke(audioSamplingRates, (uint)pcm.Length, pcm);
 
                         if (OnAudioSourceEncodedSample != null)
                         {
@@ -93,7 +94,13 @@ namespace SIPSorceryMedia.SDL2
                 }
 
                 // Init recording device.
-                audioSpec = SDL2Helper.GetDefaultAudioSpec();
+                AudioFormat audioFormat = _audioFormatManager.SelectedFormat;
+                if (audioFormat.ClockRate == AudioFormat.DEFAULT_CLOCK_RATE * 2)
+                    audioSamplingRates = AudioSamplingRatesEnum.Rate16KHz;
+                else
+                    audioSamplingRates = AudioSamplingRatesEnum.Rate8KHz;
+
+                audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate);
 
                 _audioInDeviceId = SDL2Helper.OpenAudioRecordingDevice(_audioInDeviceName, ref audioSpec);
                 if (_audioInDeviceId < 0)
@@ -185,6 +192,8 @@ namespace SIPSorceryMedia.SDL2
             {
                 logger.LogDebug($"Setting audio source format to {audioFormat.FormatID}:{audioFormat.Codec} {audioFormat.ClockRate}.");
                 _audioFormatManager.SetSelectedFormat(audioFormat);
+
+                InitRecordingDevice();
             }
         }
         
