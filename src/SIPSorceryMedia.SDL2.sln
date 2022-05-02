@@ -14,6 +14,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayVideoFile", "..\test\Pl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CAE0B31E-2987-4756-A671-DC388E8D10DD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckCodec", "..\test\CheckCodec\CheckCodec.csproj", "{78DF6AEA-EECD-4969-BA1F-BDE204E26E8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{F412836F-65C5-435B-84E0-432232752171}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F412836F-65C5-435B-84E0-432232752171}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F412836F-65C5-435B-84E0-432232752171}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78DF6AEA-EECD-4969-BA1F-BDE204E26E8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78DF6AEA-EECD-4969-BA1F-BDE204E26E8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78DF6AEA-EECD-4969-BA1F-BDE204E26E8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78DF6AEA-EECD-4969-BA1F-BDE204E26E8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +45,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{003ACB2F-A3C0-42C4-8114-048DD07FA364} = {CAE0B31E-2987-4756-A671-DC388E8D10DD}
 		{F412836F-65C5-435B-84E0-432232752171} = {CAE0B31E-2987-4756-A671-DC388E8D10DD}
+		{78DF6AEA-EECD-4969-BA1F-BDE204E26E8C} = {CAE0B31E-2987-4756-A671-DC388E8D10DD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21B8F85D-FF0C-48DB-8858-DF2A837DF1FE}
