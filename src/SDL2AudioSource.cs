@@ -12,7 +12,7 @@ namespace SIPSorceryMedia.SDL2
 {
     public class SDL2AudioSource: IAudioSource
     {
-        static private ILogger logger = SIPSorcery.LogFactory.CreateLogger<SDL2AudioSource>();
+        static private ILogger log = SIPSorcery.LogFactory.CreateLogger<SDL2AudioSource>();
 
         private String _audioInDeviceName;
         private uint _audioInDeviceId = 0;
@@ -23,6 +23,8 @@ namespace SIPSorceryMedia.SDL2
         private bool _isStarted = false;
         private bool _isPaused = true;
         private bool _isClosed = true;
+
+        private uint frameSize = 0;
 
         private SDL_AudioSpec audioSpec;
 
@@ -37,7 +39,7 @@ namespace SIPSorceryMedia.SDL2
         public event SourceErrorDelegate ? OnAudioSourceError = null;
 #endregion EVENT
 
-        public SDL2AudioSource(String audioInDeviceName, IAudioEncoder audioEncoder)
+        public SDL2AudioSource(String audioInDeviceName, IAudioEncoder audioEncoder, uint frameSize = 1920)
         {
             if (audioEncoder == null)
                 throw new ApplicationException("Audio encoder provided is null");
@@ -47,7 +49,7 @@ namespace SIPSorceryMedia.SDL2
             _audioFormatManager = new MediaFormatManager<AudioFormat>(audioEncoder.SupportedFormats);
             _audioEncoder = audioEncoder;
 
-            //InitRecordingDevice();
+            this.frameSize = frameSize;
 
             backgroundWorker = new BackgroundWorker();
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
@@ -58,25 +60,41 @@ namespace SIPSorceryMedia.SDL2
         {
             while (!backgroundWorker.CancellationPending)
             {
-                uint size = SDL_GetQueuedAudioSize(_audioInDeviceId);
-                if (size > 0)
+                uint size = 0;
+                uint bufferSize = 0;
+                do
                 {
-                    byte[] buf = new byte[size];
-
-                    fixed (byte* ptr = &buf[0])
+                    size = SDL_GetQueuedAudioSize(_audioInDeviceId);
+                    //log.LogDebug($"QueuedAudioSize: [{size}] - frameSize: [{frameSize}]");
+                    if (size >= ( frameSize * 2)) // Need to use double size since we get byte[] and not short[] from SDL
                     {
-                        SDL_DequeueAudio(_audioInDeviceId, (IntPtr)ptr, size);
+                        if (frameSize != 0)
+                            bufferSize = frameSize * 2;
+                        else
+                            bufferSize = size;
 
-                        short[] pcm = buf.Take((int)size * 2).Where((x, i) => i % 2 == 0).Select((y, i) => BitConverter.ToInt16(buf, i * 2)).ToArray();
-                        OnAudioSourceRawSample?.Invoke(audioSamplingRates, (uint)pcm.Length, pcm);
+                        byte[] buf = new byte[bufferSize];
 
-                        if (OnAudioSourceEncodedSample != null)
+                        fixed (byte* ptr = &buf[0])
                         {
-                            var encodedSample = _audioEncoder.EncodeAudio(pcm, _audioFormatManager.SelectedFormat);
-                            OnAudioSourceEncodedSample?.Invoke((uint)encodedSample.Length, encodedSample);
+                            SDL_DequeueAudio(_audioInDeviceId, (IntPtr)ptr, bufferSize);
+
+                            short[] pcm = buf.Take((int)bufferSize * 2).Where((x, i) => i % 2 == 0).Select((y, i) => BitConverter.ToInt16(buf, i * 2)).ToArray();
+                            OnAudioSourceRawSample?.Invoke(audioSamplingRates, (uint)pcm.Length, pcm);
+
+                            if (OnAudioSourceEncodedSample != null)
+                            {
+                                var encodedSample = _audioEncoder.EncodeAudio(pcm, _audioFormatManager.SelectedFormat);
+                                if (encodedSample.Length > 0)
+                                    OnAudioSourceEncodedSample?.Invoke((uint)pcm.Length, encodedSample);
+                            }
                         }
+
+                        size -= bufferSize;
+                        //log.LogDebug($"Current Size: [{size}] - bufferSize: [{bufferSize}]");
                     }
-                }
+                } while (size >= frameSize);
+
                 SDL_Delay(16);
             }
         }
@@ -100,15 +118,17 @@ namespace SIPSorceryMedia.SDL2
                 else
                     audioSamplingRates = AudioSamplingRatesEnum.Rate8KHz;
 
-                audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate);
+                audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate, 1, (ushort)frameSize);
+
+                int bytesPerSecond = SDL2Helper.GetBytesPerSecond(audioSpec);
 
                 _audioInDeviceId = SDL2Helper.OpenAudioRecordingDevice(_audioInDeviceName, ref audioSpec);
-                if (_audioInDeviceId < 0)
+                if (_audioInDeviceId < 1)
                     throw new ApplicationException("No recording device name found");
             }
             catch (Exception excp)
             {
-                logger.LogWarning(excp, "SDLAudioEndPoint failed to initialise recording device.");
+                log.LogWarning(excp, "SDLAudioEndPoint failed to initialise recording device.");
                 OnAudioSourceError?.Invoke($"SDLAudioEndPoint failed to initialise recording device. {excp.Message}");
             }
         }
@@ -190,7 +210,7 @@ namespace SIPSorceryMedia.SDL2
         {
             if (_audioFormatManager != null)
             {
-                logger.LogDebug($"Setting audio source format to {audioFormat.FormatID}:{audioFormat.Codec} {audioFormat.ClockRate}.");
+                log.LogDebug($"Setting audio source format to {audioFormat.FormatID}:{audioFormat.Codec} {audioFormat.ClockRate}.");
                 _audioFormatManager.SetSelectedFormat(audioFormat);
 
                 InitRecordingDevice();

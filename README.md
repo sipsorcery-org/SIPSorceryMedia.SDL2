@@ -24,7 +24,8 @@ Using both you have these features:
  - PCMU
  - PCMA
  - G722
- - G729 (not tested but should worked)
+ - G729 (not tested in SIP Context but should work)
+ - Opus (see **CheckCodec** example which implements Opus Codec using [Concentus (C# implementation)](https://github.com/lostromb/concentus)
 
 # Installing SDL2
 
@@ -53,4 +54,9 @@ Several projects permits to understand how the library can be used:
     
 - [PlayVideoFile](./test/PlayVideoFile) - **Multiplatform application**:
     - Let user select an Audio Playback device
-    - Play Video file (Display it in ASCII in a Terminal Window)
+    - Play Video file (Display it in ASCII in a Console/Terminal Window)
+    
+- [CheckCodec](./test/CheckCodec) - **Multiplatform application**:
+    - Let user select an Audio Playback device and an Audio Recording device
+    - Let user select one of Audio Codec supported  
+    - Play back the sound from selected Audio Recording device after Encoding then Decoding the sample 

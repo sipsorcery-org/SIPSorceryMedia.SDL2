@@ -91,7 +91,7 @@ namespace SIPSorceryMedia.SDL2
 
                 // Init Playback device.
                 AudioFormat audioFormat = _audioFormatManager.SelectedFormat;
-                var audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate);
+                var audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate, 1);
 
                 _audioOutDeviceId = SDL2Helper.OpenAudioPlaybackDevice(_audioOutDeviceName, ref audioSpec);
                 if(_audioOutDeviceId < 0)
@@ -125,7 +125,6 @@ namespace SIPSorceryMedia.SDL2
                 // Decode sample
                 var pcmSample = _audioEncoder.DecodeAudio(payload, _audioFormatManager.SelectedFormat);
                 byte[] pcmBytes = pcmSample.SelectMany(x => BitConverter.GetBytes(x)).ToArray();
-                
                 GotAudioSample(pcmBytes);
             }
         }

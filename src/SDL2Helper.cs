@@ -15,18 +15,22 @@ namespace SIPSorceryMedia.SDL2
 
         static public  String? GetAudioPlaybackDevice(String startWithName) => GetAudioDevice(startWithName, false);
 
+        static public String? GetAudioRecordingDevice(int index) => GetAudioDevice(index, true);
+
+        static public String? GetAudioPlaybackDevice(int index) => GetAudioDevice(index, false);
+
         static public List<String> GetAudioPlaybackDevices() => GetAudioDevices(false);
 
         static public List<String> GetAudioRecordingDevices() => GetAudioDevices(true);
 
-        static public SDL_AudioSpec GetAudioSpec(int clockRate = AudioFormat.DEFAULT_CLOCK_RATE, byte channels = 1)
+        static public SDL_AudioSpec GetAudioSpec(int clockRate = AudioFormat.DEFAULT_CLOCK_RATE, byte channels = 1, ushort samples = 960)
         {
             SDL_AudioSpec desiredPlaybackSpec = new SDL_AudioSpec();
             desiredPlaybackSpec.freq = clockRate;
-            desiredPlaybackSpec.format = AUDIO_S16;
+            desiredPlaybackSpec.format = AUDIO_S16SYS;
             desiredPlaybackSpec.channels = channels; // Value returned by (byte)ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_MONO);
             desiredPlaybackSpec.silence = 0;
-            //desiredPlaybackSpec.samples = 512;
+            desiredPlaybackSpec.samples = samples;
             //desiredPlaybackSpec.userdata = null;
 
             return desiredPlaybackSpec;
@@ -129,6 +133,21 @@ namespace SIPSorceryMedia.SDL2
                     }
                 }
                 
+            }
+            return result;
+        }
+
+        static private String? GetAudioDevice(int index, Boolean isCapture)
+        {
+            String? result = null;
+            int isCaptureDevice = isCapture ? SDL_TRUE : SDL_FALSE;
+
+            //Get capture device count
+            int deviceCount = SDL_GetNumAudioDevices(isCaptureDevice);
+
+            if ( (deviceCount > 0) && (index < deviceCount) )
+            {
+                return SDL_GetAudioDeviceName(index, isCaptureDevice);
             }
             return result;
         }
