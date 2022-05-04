@@ -5,10 +5,18 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	<Version>1.0.0</Version>
+	<Version>1.1.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
+    <Authors>Christophe Irles</Authors>
+    <Description>
+		This project is an example of developing a C# library that can use features from [SDL2](https://www.libsdl.org/index.php) native libraries and that integrates with the [SIPSorcery](https://github.com/sipsorcery-org/sipsorcery) real-time communications library.
+
+		The classes in this project provide Audio End Point and Audio Source features.
+
+		Audio Codecs supported by this library: PCMU (G711), PCMA (G711), G722, G729 and Opus
+	</Description>
     <PackageLicenseExpression>LGPL-2.1-only</PackageLicenseExpression>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
