@@ -18,6 +18,7 @@
       <dependency id="SIPSorceryMedia.Abstractions" Version="1.2.0" />
     </dependencies>
 	<releaseNotes>
+-v1.1.0: Enhance Audio Source encoding. Audio Codecs tested: PCMU (G711), PCMA (G711), G722, G729 and Opus
 -v1.0.0: Audio Source and Audio End Point       
 	</releaseNotes>
 	<version>1.0.0</version>

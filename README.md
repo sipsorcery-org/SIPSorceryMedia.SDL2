@@ -57,6 +57,7 @@ Several projects permits to understand how the library can be used:
     - Play Video file (Display it in ASCII in a Console/Terminal Window)
     
 - [CheckCodec](./test/CheckCodec) - **Multiplatform application**:
-    - Let user select an Audio Playback device and an Audio Recording device
-    - Let user select one of Audio Codec supported  
-    - Play back the sound from selected Audio Recording device after Encoding then Decoding the sample 
+    - Let user select an Audio Playback device
+    - Let user select an Audio Recording device OR a Video File
+    - Let user select one of the Audio Codecs supported  
+    - Play back the sound after Encoding then Decoding the sample using the specified codec 

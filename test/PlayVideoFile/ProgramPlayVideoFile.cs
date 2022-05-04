@@ -52,7 +52,7 @@ namespace PlayVideoFile
             // Quit since no Audio playback found
             if ((sdlDevices == null) || (sdlDevices.Count == 0))
             {
-                Console.WriteLine("No Audio playbqck devices found ...");
+                Console.WriteLine("No Audio playback devices found ...");
                 SDL2Helper.QuitSDL();
                 return;
             }

@@ -1,4 +1,5 @@
 ﻿using SIPSorceryMedia.Abstractions;
+using SIPSorceryMedia.FFmpeg;
 using SIPSorceryMedia.SDL2;
 using System;
 using System.Collections.Generic;
@@ -8,15 +9,23 @@ namespace OpusCodec
 {
     internal class ProgramCheckCodec
     {
-        // Path to a valid audio WAV path
-        const String WAV_FILE_PATH = "./../../../../../media/file_example_WAV_5MG.wav";
-        //const String WAV_FILE_PATH = "./../../../../../media/file_example_WAV_1MG.wav";
+        // Path to FFmpeg library - TO DEFINE ACCORDING YOUR ENVIRONMENT
+        private const string FFMPEG_LIB_PATH = @"C:\ffmpeg-4.4.1-full_build-shared\bin";
+
+        // Path to a valid file with Audio (can also be a video file)  - IT'S POSSIBLE TO DEFINE A REMOTE FILE OR A LOCAL FILE
+        //const String AUDIO_FILE_PATH = @"C:\media\file_example_WAV_5MG.wav";
+        //const String AUDIO_FILE_PATH =   @"C:\media\sample_960x400_ocean_with_audio.mp4";
+        //const String AUDIO_FILE_PATH = @"C:\media\file_example_WAV_5MG.wav";
+        //const String AUDIO_FILE_PATH = @"C:\media\media/max_intro.mp4";
+        const String AUDIO_FILE_PATH = @"https://upload.wikimedia.org/wikipedia/commons/0/0f/Pop_RockBrit_%28exploration%29-en_wave.wav";
+        //const String AUDIO_FILE_PATH = @"https://upload.wikimedia.org/wikipedia/commons/a/af/Armello_-_%27Horrors_%26_Heroes%27_Trailer.webm";
+
 
         static SDL2AudioEndPoint audioEndPoint;
-        static SDL2AudioSource audioSource;
+        static IAudioSource audioSource;
 
         static OpusAudioEncoder audioEncoder = new OpusAudioEncoder(); // Create AudioEncoder
-        static AudioFormat? audioFormat = new AudioFormat(SDPWellKnownMediaFormatsEnum.PCMU);
+        static AudioFormat? audioFormat;
 
         static void Main(string[] args)
         {
@@ -33,12 +42,17 @@ namespace OpusCodec
             SDL2Helper.InitSDL();
             Console.WriteLine("\nInit done");
 
-            // Select Recording Device
-            audioRecordingDeviceIndex = DeviceSelection(true);
-            if (audioRecordingDeviceIndex < 0)
+
+            var useRecordingDevice = UseRecordingDeviceOrAudioFile();
+            if(useRecordingDevice)
             {
-                SDL2Helper.QuitSDL();
-                return;
+                // Select Recording Device
+                audioRecordingDeviceIndex = DeviceSelection(true);
+                if (audioRecordingDeviceIndex < 0)
+                {
+                    SDL2Helper.QuitSDL();
+                    return;
+                }
             }
 
             // Select Playback Device
@@ -60,20 +74,39 @@ namespace OpusCodec
             audioRecordingDeviceName = GetDeviceName(audioRecordingDeviceIndex, true);
             audioPlaybackDeviceName = GetDeviceName(audioPlaybackDeviceIndex, false);
 
-            Console.WriteLine($"\nRecording Device selected: [{audioRecordingDeviceName}]");
-            Console.WriteLine($"\nPlayback Device selected: [{audioPlaybackDeviceName}]");
+            if (useRecordingDevice)
+                Console.WriteLine($"\nAudio Recording Device selected: [{audioRecordingDeviceName}]");
+            else
+                Console.WriteLine($"\nAudio file selected: [{AUDIO_FILE_PATH}]");
+            Console.WriteLine($"\nAduio Playback Device selected: [{audioPlaybackDeviceName}]");
             
             audioEndPoint = new SDL2AudioEndPoint(audioPlaybackDeviceName, audioEncoder);
             audioEndPoint.SetAudioSinkFormat(audioFormat.Value);
             audioEndPoint.StartAudioSink();
 
             int frameSize = audioEncoder.GetFrameSize();
-            audioSource = new SDL2AudioSource(audioRecordingDeviceName, audioEncoder, (uint)frameSize);
+
+            if (useRecordingDevice)
+                audioSource = new SDL2AudioSource(audioRecordingDeviceName, audioEncoder, (uint)frameSize);
+            else
+            {
+                // Initialise FFmpeg librairies
+                Console.WriteLine("\nTry to init FFmpeg libraries");
+                SIPSorceryMedia.FFmpeg.FFmpegInit.Initialise(FfmpegLogLevelEnum.AV_LOG_FATAL, FFMPEG_LIB_PATH);
+                Console.WriteLine("\nInit done");
+
+                audioSource = new SIPSorceryMedia.FFmpeg.FFmpegFileSource(AUDIO_FILE_PATH, true, audioEncoder, (uint)frameSize, false);
+            }
+
             audioSource.OnAudioSourceRawSample += AudioSource_OnAudioSourceRawSample;
             audioSource.OnAudioSourceEncodedSample += AudioSource_OnAudioSourceEncodedSample;
 
             audioSource.SetAudioSourceFormat(audioFormat.Value);
             audioSource.StartAudio();
+
+
+            Console.WriteLine("\nEncoding them Decoding Audio Input and Playback if to the Audio Output device");
+            Console.WriteLine("\nPress enter to quit");
 
             for (var loop = true; loop;)
             {
@@ -167,7 +200,6 @@ namespace OpusCodec
             return deviceIndex;
         }
 
-
         static private AudioFormat? AudioFormatSelection()
         {
             AudioFormat? result = null;
@@ -209,6 +241,28 @@ namespace OpusCodec
                 Console.WriteLine($"No Audio Format available ...");
 
             return result;
+        }
+
+        static private Boolean UseRecordingDeviceOrAudioFile()
+        {
+            int deviceIndex = 0;
+            while (true)
+            {
+                Console.WriteLine($"\nDo you want to use Audio Recording Device or Audio file for Audio input ?");
+                Console.Write($"\n [1] - Use Audio Recording Device ");
+                Console.Write($"\n [2] - Use Audio file - Path:[{AUDIO_FILE_PATH}] ");
+                Console.WriteLine("\n");
+                Console.Out.Flush();
+
+                var keyConsole = Console.ReadKey();
+                if (int.TryParse("" + keyConsole.KeyChar, out int keyValue) && keyValue < 3 && keyValue > 0)
+                {
+                    deviceIndex = keyValue;
+                    break;
+                }
+            }
+
+            return deviceIndex == 1;
         }
 
     }

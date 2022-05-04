@@ -86,7 +86,7 @@ namespace SIPSorceryMedia.SDL2
                             {
                                 var encodedSample = _audioEncoder.EncodeAudio(pcm, _audioFormatManager.SelectedFormat);
                                 if (encodedSample.Length > 0)
-                                    OnAudioSourceEncodedSample?.Invoke((uint)pcm.Length, encodedSample);
+                                    OnAudioSourceEncodedSample?.Invoke((uint)( pcm.Length * _audioFormatManager.SelectedFormat.RtpClockRate / _audioFormatManager.SelectedFormat.ClockRate), encodedSample);
                             }
                         }
 
