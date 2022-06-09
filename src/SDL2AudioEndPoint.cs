@@ -27,7 +27,7 @@ namespace SIPSorceryMedia.SDL2
 {
     public class SDL2AudioEndPoint : IAudioSink
     {
-        private ILogger logger = SIPSorcery.LogFactory.CreateLogger<SDL2AudioEndPoint>();
+        private ILogger log = SIPSorcery.LogFactory.CreateLogger<SDL2AudioEndPoint>();
 
 
         private IAudioEncoder _audioEncoder;
@@ -64,6 +64,7 @@ namespace SIPSorceryMedia.SDL2
             {
                 _audioFormatManager.SetSelectedFormat(audioFormat);
                 InitPlaybackDevice();
+                StartAudioSink();
             }
         }
 
@@ -82,12 +83,7 @@ namespace SIPSorceryMedia.SDL2
             try
             {
                 // Stop previous playback device
-                if (_audioOutDeviceId > 0)
-                {
-                    SDL2Helper.PauseAudioPlaybackDevice(_audioOutDeviceId);
-                    SDL2Helper.CloseAudioPlaybackDevice(_audioOutDeviceId);
-                    _audioOutDeviceId = 0;
-                }
+                CloseAudioSink();
 
                 // Init Playback device.
                 AudioFormat audioFormat = _audioFormatManager.SelectedFormat;
@@ -96,14 +92,15 @@ namespace SIPSorceryMedia.SDL2
                 _audioOutDeviceId = SDL2Helper.OpenAudioPlaybackDevice(_audioOutDeviceName, ref audioSpec);
                 if(_audioOutDeviceId < 0)
                 {
-                    logger.LogWarning("SDLAudioEndPoint failed to initialise playback device.");
+                    log.LogError("[InitAudioSinkDevice] SDLAudioEndPoint failed to initialise playback device.");
                     OnAudioSinkError?.Invoke("SDLAudioEndPoint failed to initialise playback device.");
                 }
-
+                else
+                    log.LogDebug($"[InitAudioSinkDevice] Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}]");
             }
             catch (Exception excp)
             {
-                logger.LogWarning(excp, "SDLAudioEndPoint failed to initialise playback device.");
+                log.LogError(excp, "[InitAudioSinkDevice] SDLAudioEndPoint failed to initialise playback device.");
                 OnAudioSinkError?.Invoke($"SDLAudioEndPoint failed to initialise playback device. {excp.Message}");
             }
         }
@@ -135,6 +132,8 @@ namespace SIPSorceryMedia.SDL2
             {
                 SDL2Helper.PauseAudioPlaybackDevice(_audioOutDeviceId, true);
                 _isPaused = true;
+
+                log.LogDebug($"[PauseAudioSink] Audio output - Id:[{_audioOutDeviceId}]");
             }
 
             return Task.CompletedTask;
@@ -146,6 +145,8 @@ namespace SIPSorceryMedia.SDL2
             {
                 SDL2Helper.PauseAudioPlaybackDevice(_audioOutDeviceId, false);
                 _isPaused = false;
+
+                log.LogDebug($"[ResumeAudioSink] Audio output - Id:[{_audioOutDeviceId}]");
             }
 
             return Task.CompletedTask;
@@ -170,14 +171,18 @@ namespace SIPSorceryMedia.SDL2
 
         public Task CloseAudioSink()
         {
-            if (_isStarted)
+            if (_isStarted && (_audioOutDeviceId > 0))
             {
                 PauseAudioSink().Wait();
                 SDL2Helper.CloseAudioPlaybackDevice(_audioOutDeviceId);
-            }
 
-            _isClosed = true;
-            _isStarted = false;
+                _isClosed = true;
+                _isStarted = false;
+
+                log.LogDebug($"[CloseAudioSink] Audio output - Id:[{_audioOutDeviceId}]");
+
+                _audioOutDeviceId = 0;
+            }
 
             return Task.CompletedTask;
         }

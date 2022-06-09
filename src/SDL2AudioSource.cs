@@ -32,11 +32,12 @@ namespace SIPSorceryMedia.SDL2
 
         private AudioSamplingRatesEnum audioSamplingRates;
 
-        #region EVENT
+#region EVENT
+
         public event EncodedSampleDelegate ? OnAudioSourceEncodedSample = null;
         public event RawAudioSampleDelegate ? OnAudioSourceRawSample = null;
-
         public event SourceErrorDelegate ? OnAudioSourceError = null;
+
 #endregion EVENT
 
         public SDL2AudioSource(String audioInDeviceName, IAudioEncoder audioEncoder, uint frameSize = 1920)
@@ -56,7 +57,7 @@ namespace SIPSorceryMedia.SDL2
             backgroundWorker.WorkerSupportsCancellation = true;
         }
 
-        private unsafe void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private unsafe void BackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
             while (!backgroundWorker.CancellationPending)
             {
@@ -65,7 +66,6 @@ namespace SIPSorceryMedia.SDL2
                 do
                 {
                     size = SDL_GetQueuedAudioSize(_audioInDeviceId);
-                    //log.LogDebug($"QueuedAudioSize: [{size}] - frameSize: [{frameSize}]");
                     if (size >= ( frameSize * 2)) // Need to use double size since we get byte[] and not short[] from SDL
                     {
                         if (frameSize != 0)
@@ -91,7 +91,6 @@ namespace SIPSorceryMedia.SDL2
                         }
 
                         size -= bufferSize;
-                        //log.LogDebug($"Current Size: [{size}] - bufferSize: [{bufferSize}]");
                     }
                 } while (size >= frameSize);
 
@@ -104,12 +103,7 @@ namespace SIPSorceryMedia.SDL2
             try
             {
                 // Stop previous recording device
-                if (_audioInDeviceId > 0)
-                {
-                    SDL2Helper.PauseAudioRecordingDevice(_audioInDeviceId);
-                    SDL2Helper.CloseAudioRecordingDevice(_audioInDeviceId);
-                    _audioInDeviceId = 0;
-                }
+                CloseAudio();
 
                 // Init recording device.
                 AudioFormat audioFormat = _audioFormatManager.SelectedFormat;
@@ -123,13 +117,18 @@ namespace SIPSorceryMedia.SDL2
                 int bytesPerSecond = SDL2Helper.GetBytesPerSecond(audioSpec);
 
                 _audioInDeviceId = SDL2Helper.OpenAudioRecordingDevice(_audioInDeviceName, ref audioSpec);
-                if (_audioInDeviceId < 1)
-                    throw new ApplicationException("No recording device name found");
+                if (_audioInDeviceId > 0)
+                    log.LogDebug($"[InitRecordingDevice] Audio source - Id:[{_audioInDeviceId}] - DeviceName:[{_audioInDeviceName}]");
+                else
+                {
+                    log.LogError($"[InitRecordingDevice] Audio source - Id:[{_audioInDeviceId}] - DeviceName:[{_audioInDeviceName}]");
+                    OnAudioSourceError?.Invoke($"SDLAudioSource failed to initialise recording device. No audio device found with [{_audioInDeviceName}]");
+                }
             }
             catch (Exception excp)
             {
-                log.LogWarning(excp, "SDLAudioEndPoint failed to initialise recording device.");
-                OnAudioSourceError?.Invoke($"SDLAudioEndPoint failed to initialise recording device. {excp.Message}");
+                log.LogWarning(excp, "SDLAudioSource failed to initialise recording device.");
+                OnAudioSourceError?.Invoke($"SDLAudioSource failed to initialise recording device. {excp.Message}");
             }
         }
   
@@ -140,8 +139,11 @@ namespace SIPSorceryMedia.SDL2
                 if (backgroundWorker.IsBusy)
                     backgroundWorker.CancelAsync();
 
-                SDL2Helper.PauseAudioRecordingDevice(_audioInDeviceId, true);
+                if(_audioInDeviceId > 0)
+                    SDL2Helper.PauseAudioRecordingDevice(_audioInDeviceId, true);
+                
                 _isPaused = true;
+                log.LogDebug($"[PauseAudio] Audio source - Id:[{_audioInDeviceId}]");
             }
 
             return Task.CompletedTask;
@@ -154,8 +156,11 @@ namespace SIPSorceryMedia.SDL2
                 if (!backgroundWorker.IsBusy)
                     backgroundWorker.RunWorkerAsync();
 
-                SDL2Helper.PauseAudioRecordingDevice(_audioInDeviceId, false);
+                if (_audioInDeviceId > 0)
+                    SDL2Helper.PauseAudioRecordingDevice(_audioInDeviceId, false);
+
                 _isPaused = false;
+                log.LogDebug($"[ResumeAudio] Audio source - Id:[{_audioInDeviceId}]");
             }
 
             return Task.CompletedTask;
@@ -170,15 +175,13 @@ namespace SIPSorceryMedia.SDL2
         {
             if (!_isStarted)
             {
-                //InitRecordingDevice();
-
                 if (_audioInDeviceId > 0)
                 {
                     _isStarted = true;
                     _isClosed = false;
                     _isPaused = true;
 
-                    ResumeAudio();
+                    ResumeAudio().Wait();
                 }
             }
 
@@ -190,11 +193,16 @@ namespace SIPSorceryMedia.SDL2
             if (_isStarted)
             {
                 PauseAudio().Wait();
-                SDL2Helper.CloseAudioRecordingDevice(_audioInDeviceId);
+                if (_audioInDeviceId > 0)
+                {
+                    SDL2Helper.CloseAudioRecordingDevice(_audioInDeviceId);
+                    log.LogDebug($"[CloseAudio] Audio source - Id:[{_audioInDeviceId}]");
+                }
             }
 
             _isClosed = true;
             _isStarted = false;
+            _audioInDeviceId = 0;
 
             return Task.CompletedTask;
         }
@@ -210,10 +218,11 @@ namespace SIPSorceryMedia.SDL2
         {
             if (_audioFormatManager != null)
             {
-                log.LogDebug($"Setting audio source format to {audioFormat.FormatID}:{audioFormat.Codec} {audioFormat.ClockRate}.");
+                log.LogDebug($"Setting audio source format to {audioFormat.FormatID}:{audioFormat.FormatName} {audioFormat.ClockRate}.");
                 _audioFormatManager.SetSelectedFormat(audioFormat);
 
                 InitRecordingDevice();
+                StartAudio();
             }
         }
         
