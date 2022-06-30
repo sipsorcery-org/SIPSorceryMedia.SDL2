@@ -1,6 +1,4 @@
-﻿
-
-//-----------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------
 // Filename: SDLAudioEnpoint.cs
 //
 // Description: Example of an AudioEnpoint using SDL2 to playback audio stream
@@ -56,6 +54,12 @@ namespace SIPSorceryMedia.SDL2
             _audioOutDeviceName = audioOutDeviceName;
         }
 
+        private void RaiseAudioSinkError(String err)
+        {
+            CloseAudioSink();
+            OnAudioSinkError?.Invoke(err);
+        }
+
         public void RestrictFormats(Func<AudioFormat, bool> filter) => _audioFormatManager.RestrictFormats(filter);
 
         public void SetAudioSinkFormat(AudioFormat audioFormat)
@@ -90,18 +94,18 @@ namespace SIPSorceryMedia.SDL2
                 var audioSpec = SDL2Helper.GetAudioSpec(audioFormat.ClockRate, 1);
 
                 _audioOutDeviceId = SDL2Helper.OpenAudioPlaybackDevice(_audioOutDeviceName, ref audioSpec);
-                if(_audioOutDeviceId < 0)
-                {
-                    log.LogError("[InitAudioSinkDevice] SDLAudioEndPoint failed to initialise playback device.");
-                    OnAudioSinkError?.Invoke("SDLAudioEndPoint failed to initialise playback device.");
-                }
+                if(_audioOutDeviceId > 0)
+                    log.LogDebug($"[InitPlaybackDevice] Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}]");
                 else
-                    log.LogDebug($"[InitAudioSinkDevice] Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}]");
+                {
+                    log.LogError($"[InitPlaybackDevice] SDLAudioEndPoint failed to initialise device. No audio device found - Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}]");
+                    RaiseAudioSinkError($"SDLAudioEndPoint failed to initialise device. No audio device found - Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}]");
+                }
             }
             catch (Exception excp)
             {
-                log.LogError(excp, "[InitAudioSinkDevice] SDLAudioEndPoint failed to initialise playback device.");
-                OnAudioSinkError?.Invoke($"SDLAudioEndPoint failed to initialise playback device. {excp.Message}");
+                log.LogError(excp, $"[InitPlaybackDevice] SDLAudioEndPoint failed to initialise device - Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}]");
+                RaiseAudioSinkError($"SDLAudioEndPoint failed to initialise device. No audio device found - Id:[{_audioOutDeviceId}] - DeviceName:[{_audioOutDeviceName}] - Exception:[{excp.Message}]");
             }
         }
 
@@ -112,12 +116,20 @@ namespace SIPSorceryMedia.SDL2
         public void GotAudioSample(byte[] pcmSample)
         {
             if (_audioOutDeviceId > 0)
+            {
+                // Check if device is not stopped
+                if (SDL2Helper.IsDeviceStopped(_audioOutDeviceId))
+                {
+                    RaiseAudioSinkError($"SDLAudioSource [{_audioOutDeviceName}] stoppped.");
+                    return;
+                }
                 SDL2Helper.QueueAudioPlaybackDevice(_audioOutDeviceId, ref pcmSample, (uint)pcmSample.Length);
+            }
         }
 
         public void GotAudioRtp(IPEndPoint remoteEndPoint, uint ssrc, uint seqnum, uint timestamp, int payloadID, bool marker, byte[] payload)
         {
-            if (_audioEncoder != null)
+            if ( (_audioEncoder != null) && (_audioOutDeviceId > 0) )
             {
                 // Decode sample
                 var pcmSample = _audioEncoder.DecodeAudio(payload, _audioFormatManager.SelectedFormat);

@@ -11,6 +11,12 @@ namespace SIPSorceryMedia.SDL2
     {
         private static Boolean _sdl2Initialised = false;
 
+        static public Boolean IsDeviceStopped(uint deviceId) => (SDL_GetAudioDeviceStatus(deviceId) == SDL_AudioStatus.SDL_AUDIO_STOPPED);
+
+        static public Boolean IsDevicePaused(uint deviceId) => (SDL_GetAudioDeviceStatus(deviceId) == SDL_AudioStatus.SDL_AUDIO_PAUSED);
+
+        static public Boolean IsDevicePlaying(uint deviceId) => (SDL_GetAudioDeviceStatus(deviceId) == SDL_AudioStatus.SDL_AUDIO_PLAYING);
+
         static public String ? GetAudioRecordingDevice(String startWithName) => GetAudioDevice(startWithName, true);
 
         static public  String? GetAudioPlaybackDevice(String startWithName) => GetAudioDevice(startWithName, false);
@@ -47,6 +53,12 @@ namespace SIPSorceryMedia.SDL2
             //Calculate bytes per second
             return sdlAudioSpec.freq * GetBytesPerSample(sdlAudioSpec);
         }
+
+        static public uint GetQueuedAudioSize(uint deviceID) => SDL_GetQueuedAudioSize(deviceID);
+
+        static public uint DequeueAudio(uint deviceID, IntPtr ptr, uint bufferSize) => SDL_DequeueAudio(deviceID, ptr, bufferSize);
+
+        static public void Delay(uint ms) => SDL_Delay(ms);
 
         static public uint OpenAudioPlaybackDevice(String deviceName, ref SDL_AudioSpec audioSpec) => SDL_OpenAudioDevice(deviceName, SDL_FALSE, ref audioSpec, out SDL_AudioSpec receivedPlaybackSpec, SDL_FALSE);
 
