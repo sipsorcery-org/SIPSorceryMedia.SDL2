@@ -97,7 +97,7 @@ namespace PlayVideoFile
             asciiFrame = new AsciiFrame();
 
             // Create VideoSource Interface using video file
-            SIPSorceryMedia.FFmpeg.FFmpegFileSource fileSource = new SIPSorceryMedia.FFmpeg.FFmpegFileSource(VIDEO_FILE_PATH, false, audioEncoder, true);
+            SIPSorceryMedia.FFmpeg.FFmpegFileSource fileSource = new SIPSorceryMedia.FFmpeg.FFmpegFileSource(VIDEO_FILE_PATH, false, audioEncoder);
             videoSource = fileSource as IVideoSource;
             videoSource.RestrictFormats(x => x.Codec == VideoCodec);
             videoSource.SetVideoSourceFormat(videoSource.GetVideoSourceFormats().Find(x => x.Codec == VideoCodec));

@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="1.2.0" />
+    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="1.2.1" />
   </ItemGroup>
 
 </Project>
