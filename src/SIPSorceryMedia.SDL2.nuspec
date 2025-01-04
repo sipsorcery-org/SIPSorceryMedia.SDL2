@@ -3,7 +3,7 @@
   <metadata>
     <id>SIPSorceryMedia.SDL2</id>
     <authors>Christophe Irles</authors>
-    <copyright>Copyright © 2020-2024 Christophe Irles</copyright>
+    <copyright>Copyright © 2020-2025 Christophe Irles</copyright>
     <license type="expression">LGPL-2.1-only</license>
     <title>SIPSorceryMedia.SDL2</title>
     <summary>SDL2 Audio Source and Audio End Point for real-time communications.</summary>
@@ -11,16 +11,17 @@
 	<iconUrl>http://www.sipsorcery.com/mainsite/favicon.ico</iconUrl>
 	<icon>icon.png</icon>
     <projectUrl>https://github.com/sipsorcery-org/SIPSorcery.SDL2</projectUrl>
-	<repository type="git" url="https://github.com/sipsorcery-org/SIPSorcery.SDL2" branch="master" />
+	<repository type="git" url="https://github.com/sipsorcery-org/SIPSorcery.SDL2" branch="main" />
 	<tags>WebRTC VoIP SIPSorcery Media SDL2 Audio</tags>
 	<dependencies>
-      <dependency id="SIPSorceryMedia.Abstractions" Version="1.2.0" />
+      <dependency id="SIPSorceryMedia.Abstractions" Version="8.0.7" />
     </dependencies>
-	<releaseNotes>-v1.2.0: Use latest version of abstractions.
+	<releaseNotes>-v8.0.7: Use latest version of abstractions
+-v1.2.0: Use latest version of abstractions.
 -v1.1.0: Enhance Audio Source encoding. Audio Codecs tested: PCMU (G711), PCMA (G711), G722, G729 and Opus
 -v1.0.0: Audio Source and Audio End Point       
 	</releaseNotes>
-	<version>1.2.0</version>
+	<version>8.0.7</version>
   </metadata>
   <files>
     <file src="icon.png" target="icon.png" />
