@@ -1,3 +1,5 @@
+**The SIPSorceryMedia.SDL2 project does not currently have an active maintainer. Support for issues is not likely to materialise.**
+
 # SIPSorceryMedia.SDL2
 
 This project is an example of developing a C# library that can use features from [SDL2](https://www.libsdl.org/index.php) native libraries and that integrates with the [SIPSorcery](https://github.com/sipsorcery-org/sipsorcery) real-time communications library.
