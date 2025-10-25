@@ -60,16 +60,26 @@ namespace SIPSorceryMedia.SDL2
             OnAudioSinkError?.Invoke(err);
         }
 
+        public void GotEncodedMediaFrame(EncodedAudioFrame encodedMediaFrame)
+        {
+            var audioFormat = encodedMediaFrame.AudioFormat;
+
+            if (_audioOutDeviceId > 0 && !audioFormat.IsEmpty())
+            {
+                // Decode sample
+                var pcmSample = _audioEncoder.DecodeAudio(encodedMediaFrame.EncodedAudio, audioFormat);
+                byte[] pcmBytes = pcmSample.SelectMany(BitConverter.GetBytes).ToArray();
+                GotAudioSample(pcmBytes);
+            }
+        }
+
         public void RestrictFormats(Func<AudioFormat, bool> filter) => _audioFormatManager.RestrictFormats(filter);
 
         public void SetAudioSinkFormat(AudioFormat audioFormat)
         {
-            if (_audioFormatManager != null)
-            {
-                _audioFormatManager.SetSelectedFormat(audioFormat);
-                InitPlaybackDevice();
-                StartAudioSink();
-            }
+            _audioFormatManager.SetSelectedFormat(audioFormat);
+            InitPlaybackDevice();
+            StartAudioSink();
         }
 
         public List<AudioFormat> GetAudioSinkFormats() => _audioFormatManager.GetSourceFormats();
@@ -120,16 +130,17 @@ namespace SIPSorceryMedia.SDL2
                 // Check if device is not stopped
                 if (SDL2Helper.IsDeviceStopped(_audioOutDeviceId))
                 {
-                    RaiseAudioSinkError($"SDLAudioSource [{_audioOutDeviceName}] stoppped.");
+                    RaiseAudioSinkError($"SDLAudioSource [{_audioOutDeviceName}] stopped.");
                     return;
                 }
                 SDL2Helper.QueueAudioPlaybackDevice(_audioOutDeviceId, ref pcmSample, (uint)pcmSample.Length);
             }
         }
 
+        [Obsolete("Use GotEncodeMediaFrame instead.")]
         public void GotAudioRtp(IPEndPoint remoteEndPoint, uint ssrc, uint seqnum, uint timestamp, int payloadID, bool marker, byte[] payload)
         {
-            if ( (_audioEncoder != null) && (_audioOutDeviceId > 0) )
+            if (_audioOutDeviceId > 0)
             {
                 // Decode sample
                 var pcmSample = _audioEncoder.DecodeAudio(payload, _audioFormatManager.SelectedFormat);
