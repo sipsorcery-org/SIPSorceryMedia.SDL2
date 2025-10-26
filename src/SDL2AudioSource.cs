@@ -46,9 +46,10 @@ namespace SIPSorceryMedia.SDL2
 
 #region EVENT
 
-        public event EncodedSampleDelegate ? OnAudioSourceEncodedSample = null;
-        public event RawAudioSampleDelegate ? OnAudioSourceRawSample = null;
-        public event SourceErrorDelegate ? OnAudioSourceError = null;
+        public event EncodedSampleDelegate? OnAudioSourceEncodedSample = null;
+        public event RawAudioSampleDelegate? OnAudioSourceRawSample = null;
+        public event SourceErrorDelegate? OnAudioSourceError = null;
+        public event Action<EncodedAudioFrame>? OnAudioSourceEncodedFrameReady = null;
 
 #endregion EVENT
 

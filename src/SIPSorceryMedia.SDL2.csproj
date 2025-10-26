@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	<Version>8.0.7</Version>
+	<Version>8.0.12</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="8.0.7" />
+    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="8.0.12" />
   </ItemGroup>
 
 </Project>
